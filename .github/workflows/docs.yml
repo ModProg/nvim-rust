@@ -24,7 +24,7 @@ jobs:
         run: |
           sudo apt-get install libluajit-5.1-dev
           cargo doc --no-deps --all-features
-          mv target/doc/nvim/* target/doc/
+          mv -f target/doc/nvim/* target/doc/
       - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
