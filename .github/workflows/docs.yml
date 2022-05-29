@@ -23,15 +23,15 @@ jobs:
       - name: Generate Docs
         run: |
           sudo apt-get install libluajit-5.1-dev
+          rm -r target/doc
           cargo doc --no-deps --all-features
-          mkdir docs
-          mv target/doc/nvim/* docs
-          mv target/doc/* docs
+          mv target/doc/nvim/* target/doc/
+
       - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           branch: gh-pages
-          folder: docs
+          folder: target/doc
           git-config-name: ModBotProg
           git-config-email: bot@modprog.de
           clean: true
