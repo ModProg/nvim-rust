@@ -14,7 +14,7 @@ jobs:
         
       - name: Generate Docs
         run: |
-          sudo apt install luajit
+          sudo apt-get install libluajit-5.1-dev
           cargo doc --no-deps --all-features
       - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@releases/v4
