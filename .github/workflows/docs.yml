@@ -24,12 +24,14 @@ jobs:
         run: |
           sudo apt-get install libluajit-5.1-dev
           cargo doc --no-deps --all-features
-          mv -f target/doc/nvim/* target/doc/
+          mkdir docs
+          mv target/doc/nvim/* docs
+          mv target/doc/* docs
       - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           branch: gh-pages
-          folder: target/doc
+          folder: docs
           git-config-name: ModBotProg
           git-config-email: bot@modprog.de
           clean: true
