@@ -1,5 +1,5 @@
+[![Documentation for `main`](https://img.shields.io/badge/docs-main-informational)](https://nvim.docs.modprog.de)
+
 # Neovim Lua API for Rust
 
-Support accessing the neovim lua API from Rust via FFI.
-
-Currently work in Progress at [ModProg/nvim-rust](https://github.com/ModProg/nvim-rust).
+To get started, you can use the template at [Modprog/nvim-rust-hatch](https://github.com/ModProg/nvim-rust-hatch).
