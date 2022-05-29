@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 use std::future::Future;
 
 use derive_builder::Builder;
@@ -13,79 +14,12 @@ use crate::common::Buffer;
 fn_table! {
     /// `vim.api.*`
     Api(vim.api, "https://neovim.io/doc/user/api.html" # "api-global") {
-        /// Get all autocommands that match the corresponding `opts`.
-        nvim_get_autocmds(opts: NvimGetAutocmdsOpts) -> Vec<AutoCmd> {
-            #[derive(Builder, Default, ToLua)]
-            #[builder(setter(strip_option))]
-            #[builder(default)]
-            pub struct NvimGetAutocmdsOpts {
-                group: Option<StrI64>,
-                event: Option<Vec<String>>,
-                pattern: Option<Vec<String>>,
-            }
 
-            #[derive(Deserialize, Debug, Default, FromLua)]
-            pub struct AutoCmd {
-                pub id: Option<i64>,
-                pub group: Option<i64>,
-                pub group_name: Option<String>,
-                pub desc: Option<String>,
-                pub event: String,
-                pub command: Option<String>,
-                pub once: bool,
-                pub pattern: String,
-                pub buflocal: bool,
-                pub buffer: Option<i64>,
-            }
-        }
-
-        /// Create an autocommand
-        ///
-        /// The API allows for two (mutually exclusive) types of actions
-        /// to be executed when the autocommand triggers: a callback
-        /// function (Lua or Vimscript), or a command (like regular
-        /// autocommands).
-        nvim_create_autocmd(events: Vec<String>, opts: NvimCreateAutocmdsOpts) -> i64 {
+        nvim__get_runtime(pat: &[&str], all: bool, opts: NvimGetRuntimeOpts) -> LuaValue {
             input!{
-                NvimCreateAutocmdsOpts<'lua> {
-                    group: Option<StrI64>,
-                    /// Cannot be used with buffer
-                    pattern: Option<Vec<String>>,
-                    /// Cannot be used with pattern
-                    buffer: Option<i64>,
-                    desc: Option<String>,
-                    /// Cannot be used with command
-                    callback: Option<Callback<'lua>>,
-                    /// Cannot be used with callback
-                    command: Option<String>,
-                    once: bool,
-                    nested: bool
+                NvimGetRuntimeOpts {
+                    is_lua: bool
                 }
-            }
-
-            #[derive(ToLua, From, Clone)]
-            pub enum Callback<'lua> {
-                VimScript(String),
-                Lua(LuaFunction<'lua>),
-            }
-
-            impl<'lua> Callback<'lua> {
-                pub fn from_fn(lua: &'lua Lua, callback: impl Fn(&'lua Lua, AutocmdCallbackData) -> bool + 'static + Send) -> Self {
-                    Callback::Lua(lua.create_function(move |lua, a| Ok(callback(lua, a))).unwrap())
-                }
-                pub fn from_fn_mut(lua: &'lua Lua, mut callback: impl FnMut(AutocmdCallbackData) -> bool + 'static + Send) -> Self {
-                    Callback::Lua(lua.create_function_mut(move |_lua, a| Ok(callback(a))).unwrap())
-                }
-            }
-
-            #[derive(Clone, FromLua, Debug)]
-            pub struct AutocmdCallbackData {
-                pub id: i64,
-                pub event: String,
-                pub group: Option<i64>,
-                pub matc: Option<String>,
-                pub buf: i64,
-                pub file: Option<String>,
             }
         }
 
@@ -145,7 +79,137 @@ fn_table! {
             }
         }
 
+        /// Create an autocommand
+        ///
+        /// The API allows for two (mutually exclusive) types of actions
+        /// to be executed when the autocommand triggers: a callback
+        /// function (Lua or Vimscript), or a command (like regular
+        /// autocommands).
+        nvim_create_autocmd(events: Vec<String>, opts: NvimCreateAutocmdsOpts) -> i64 {
+            input!{
+                NvimCreateAutocmdsOpts<'lua> {
+                    group: Option<StrI64>,
+                    /// Cannot be used with buffer
+                    pattern: Option<Vec<String>>,
+                    /// Cannot be used with pattern
+                    buffer: Option<i64>,
+                    desc: Option<String>,
+                    /// Cannot be used with command
+                    callback: Option<Callback<'lua>>,
+                    /// Cannot be used with callback
+                    command: Option<String>,
+                    once: bool,
+                    nested: bool
+                }
+            }
+
+            #[derive(ToLua, From, Clone)]
+            pub enum Callback<'lua> {
+                VimScript(String),
+                Lua(LuaFunction<'lua>),
+            }
+
+            impl<'lua> Callback<'lua> {
+                pub fn from_fn(lua: &'lua Lua, callback: impl Fn(&'lua Lua, AutocmdCallbackData) -> bool + 'static + Send) -> Self {
+                    Callback::Lua(lua.create_function(move |lua, a| Ok(callback(lua, a))).unwrap())
+                }
+                pub fn from_fn_mut(lua: &'lua Lua, mut callback: impl FnMut(AutocmdCallbackData) -> bool + 'static + Send) -> Self {
+                    Callback::Lua(lua.create_function_mut(move |_lua, a| Ok(callback(a))).unwrap())
+                }
+            }
+
+            #[derive(Clone, FromLua, Debug)]
+            pub struct AutocmdCallbackData {
+                pub id: i64,
+                pub event: String,
+                pub group: Option<i64>,
+                pub matc: Option<String>,
+                pub buf: i64,
+                pub file: Option<String>,
+            }
+        }
+
         nvim_exec(src: &str, output: bool) -> String
+
+        /// Get all autocommands that match the corresponding `opts`.
+        nvim_get_autocmds(opts: NvimGetAutocmdsOpts) -> Vec<AutoCmd> {
+            #[derive(Builder, Default, ToLua)]
+            #[builder(setter(strip_option))]
+            #[builder(default)]
+            pub struct NvimGetAutocmdsOpts {
+                group: Option<StrI64>,
+                event: Option<Vec<String>>,
+                pattern: Option<Vec<String>>,
+            }
+
+            #[derive(Deserialize, Debug, Default, FromLua)]
+            pub struct AutoCmd {
+                pub id: Option<i64>,
+                pub group: Option<i64>,
+                pub group_name: Option<String>,
+                pub desc: Option<String>,
+                pub event: String,
+                pub command: Option<String>,
+                pub once: bool,
+                pub pattern: String,
+                pub buflocal: bool,
+                pub buffer: Option<i64>,
+            }
+        }
+
+        /// Find files in runtime direcories
+        nvim_get_runtime_file(glob: &str, all: bool) -> Vec<String>
+
+        nvim_set_keymap(mode: Mode, lhs: &str, rhs: &str, opts: NvimSetKeymapOpts) {
+            #[derive(Clone, Copy, Debug, ToLua, Deserialize)]
+            pub enum Mode {
+                #[mlua(value = "")]
+                #[serde(alias = "")]
+                NormalVisualSelectOperatorPending,
+                #[mlua(value = "n")]
+                #[serde(alias = "n")]
+                Normal,
+                #[mlua(value = "v")]
+                #[serde(alias = "v")]
+                VisualSelect,
+                #[mlua(value = "s")]
+                #[serde(alias = "s")]
+                Select,
+                #[mlua(value = "x")]
+                #[serde(alias = "x")]
+                Visual,
+                #[mlua(value = "o")]
+                #[serde(alias = "o")]
+                OperatorPending,
+                #[mlua(value = "!")]
+                #[serde(alias = "!")]
+                InsertCommandline,
+                #[mlua(value = "i")]
+                #[serde(alias = "i")]
+                Insert,
+                #[mlua(value = "l")]
+                #[serde(alias = "l")]
+                InsertCommandLineLangArg,
+                #[mlua(value = "c")]
+                #[serde(alias = "c")]
+                CommandLine,
+                #[mlua(value = "t")]
+                #[serde(alias = "t")]
+                Terminal
+            }
+            input!{
+                NvimSetKeymapOpts<'lua> {
+                    nowait: bool,
+                    silent: bool,
+                    script: bool,
+                    expr: bool,
+                    unique: bool,
+                    noremap: bool,
+                    desc: Option<String>,
+                    callback: Option<LuaFunction<'lua>>
+                }
+            }
+        }
     }
 }
 

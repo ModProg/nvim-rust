@@ -45,64 +45,35 @@ macro_rules! input {
     {$ident:ident$(<$($generics:tt),*>)? {$($body:tt)*} } => {
         #[derive(Builder, Default, ToLua)]
         #[builder(setter(strip_option))]
+        #[builder(build_fn(private, name = "build_"))]
         #[builder(default)]
         pub struct $ident$(<$($generics),*>)? {$($body)*}
-        impl$(<$($generics),*>)? $ident$(<$($generics),*>)? {
-            concat_idents::concat_idents!(Builder = $ident, Builder{
-                pub fn builder() -> Builder$(<$($generics),*>)? {
-                    Default::default()
-                }
-            });
-        }
+        concat_idents::concat_idents!(Builder = $ident, Builder{
+            impl$(<$($generics),*>)? $ident$(<$($generics),*>)? {
+                    pub fn builder() -> Builder$(<$($generics),*>)? {
+                        Default::default()
+                    }
+            }
+            impl$(<$($generics),*>)? Builder$(<$($generics),*>)? {
+                    pub fn build(&self) -> $ident$(<$($generics),*>)? {
+                        self.build_().expect("builder is infallible")
+                    }
+            }
+        });
+
+    };
+    {fallible $ident:ident$(<$($generics:tt),*>)? {$($body:tt)*} } => {
+        #[derive(Builder, Default, ToLua)]
+        #[builder(setter(strip_option))]
+        #[builder(default)]
+        pub struct $ident$(<$($generics),*>)? {$($body)*}
+        concat_idents::concat_idents!(Builder = $ident, Builder{
+            impl$(<$($generics),*>)? $ident$(<$($generics),*>)? {
+                    pub fn builder() -> Builder$(<$($generics),*>)? {
+                        Default::default()
+                    }
+            }
+        });
+
     };
 }
-
-// macro_rules! builder_opt {
-//     {$struct:ident {
-//         $($ident:ident : $ty:ty),*
-//     }} => {
-//         #[skip_serializing_none]
-//         #[derive(Serialize)]
-//         pub struct $struct {
-//             $($ident: Option<$ty>),*
-//         }
-//
-//         impl $struct {
-//             fn none()->Self{
-//                 Self {
-//                     $($ident: None),*
-//                 }
-//             }
-//             $(field!{$ident: Option<$ty>})*
-//         }
-//     };
-// }
-//
-// macro_rules! field {
-//     ($ident:ident : Option<Vec<$ty:ty>>) => {
-//         pub fn $ident<T: Into<$ty>>($ident: T) -> Self {
-//             Self {
-//                 $ident: Some(vec![$ident.into()]),
-//                 ..Self::none()
-//             }
-//         }
-//         pub fn $ident<T: IntoIter<Item = $ty>>($ident: T) -> Self {
-//             Self {
-//                 $ident: Some(vec![$ident.into_iter().collect()]),
-//                 ..Self::none()
-//             }
-//         }
-//     };
-//     ($ident:ident : Option<$ty:ty>) => {
-//         pub fn $ident<T: Into<$ty>>($ident: T) -> Self {
-//             Self {
-//                 $ident: Some($ident.into()),
-//                 ..Self::none()
-//             }
-//         }
-//     };
-// }
-
-// group: Option<StrU32>,
-// event: Option<Vec<String>>,
-// pattern: Option<Vec<String>>,
