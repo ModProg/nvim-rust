@@ -21,7 +21,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           branch: gh-pages
-          folder: target/doc/
+          folder: target/doc/nvim
           git-config-name: ModBotProg
           git-config-email: bot@modprog.de
           clean: true
