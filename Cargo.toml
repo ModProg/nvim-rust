@@ -1,0 +1,24 @@
+[package]
+description = "Neovim API for Rust via FFI"
+edition = "2021"
+license = "MIT"
+name = "nvim"
+version = "0.0.0"
+
+[dependencies]
+concat-idents = "1.1.3"
+derive_builder = "0.11.2"
+derive_more = "0.99.17"
+log = "0.4.17"
+nvim-macros = { version = "0.1.0", path = "./macros" }
+once_cell = "1.10.0"
+serde = { version = "1.0.137", features = ["derive"] }
+serde_with = "1.13.0"
+smart-default = "0.6.0"
+futures = "0.3.21"
+
+[dependencies.mlua]
+version = "0.8.0-beta.4"
+git = "https://github.com/modProg/mlua/"
+branch = "derive-from_lua"
+features = ["luajit", "serialize", "macros", "async"]
