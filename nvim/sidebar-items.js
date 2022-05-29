@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["LogLevel",""]],"mod":[["api",""],["common",""],["lsp",""]],"struct":[["Vim","`vim.*` Neovim doc"]]});

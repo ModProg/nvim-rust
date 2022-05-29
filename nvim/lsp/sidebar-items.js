@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Handler",""]],"struct":[["Lsp","`vim.lsp.*` Neovim doc"]]});
