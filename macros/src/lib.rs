@@ -165,7 +165,7 @@ pub fn fn_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 }
             } else {None}.unwrap_or_default();
             let ident: Ident = input.parse()?;
-            let doc_link = format!("\n\n[Neovim doc]({base}#{section}{ident}%28%29))");
+            let doc_link = format!("\n\n[Neovim doc]({base}#{section}{ident}%28%29)");
             let inner;
             let _ = parenthesized!(inner in input);
             let fields = Punctuated::<FnArg, Token![,]>::parse_terminated(&inner)?;
