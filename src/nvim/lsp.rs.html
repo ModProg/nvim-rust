@@ -30,13 +30,13 @@
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 
 <span class="kw">use</span> <span class="ident">mlua::prelude</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">nvim_macros::fn_table</span>;
+<span class="kw">use</span> <span class="ident">nvim_macros::api</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::common::Buffer</span>;
 
-<span class="macro">fn_table!</span> {
+<span class="macro">api!</span> {
     <span class="doccomment">/// `vim.lsp.*`</span>
-    <span class="ident">Lsp</span>(<span class="ident">vim</span>.<span class="ident">lsp</span>, <span class="string">&quot;https://neovim.io/doc/user/lsp.html&quot;</span>#<span class="string">&quot;LSP&quot;</span>) {
+    <span class="ident">Lsp</span>(<span class="string">&quot;https://neovim.io/doc/user/lsp.html&quot;</span>#<span class="string">&quot;LSP&quot;</span>) {
         <span class="doccomment">/// Sends an async request for all active clients attached to the buffer.</span>
         <span class="ident">buf_request</span>(<span class="ident">buffer</span>: <span class="ident">Buffer</span>, <span class="ident">method</span>: <span class="ident">String</span>, <span class="ident">params</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LuaTable</span><span class="op">&lt;</span><span class="lifetime">&#39;lua</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">handler</span>: <span class="ident">Handler</span><span class="op">&lt;</span><span class="lifetime">&#39;lua</span><span class="op">&gt;</span>) -&gt; (<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">LuaFunction</span><span class="op">&lt;</span><span class="lifetime">&#39;lua</span><span class="op">&gt;</span>) {
 
