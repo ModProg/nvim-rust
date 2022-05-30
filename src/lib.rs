@@ -1,18 +1,23 @@
+use lsp::Lsp;
 use mlua::prelude::*;
-use nvim_macros::fn_table;
+use nvim_macros::api;
 
 #[macro_use]
 mod macros;
 
 pub mod api;
+use api::Api;
 pub mod common;
 pub mod lsp;
 
-fn_table! {
+api! {
     /// `vim.*`
-    Vim(vim, "https://neovim.io/doc/user/lua.html" # "lua-stdlib") {
+    Vim("https://neovim.io/doc/user/lua.html" # "lua-stdlib"){
+        api: Api,
+        lsp: Lsp,
         /// Display a notification to the user
-        [prefixed] notify(value: &str, level: LogLevel, opts: Option<LuaTable>) {
+        #[p = "vim."]
+        notify(value: &str, level: LogLevel, opts: Option<LuaTable>) {
             #[derive(Debug, Clone, Copy, ToLua)]
             pub enum LogLevel {
                 Trace = 0,
@@ -22,5 +27,22 @@ fn_table! {
                 Error = 4,
             }
         }
+        // g: Variables,
+        // b: IndexedVariables,
+        // w: IndexedVariables,
+        // t: IndexedVariables,
+        // v: Variables,
+    }
+}
+
+impl<'lua> Vim<'lua> {
+    pub fn new(lua: &'lua Lua) -> Self {
+        Self::from_lua(lua.globals().get("vim").unwrap(), lua).unwrap()
+    }
+}
+
+impl<'lua> From<&'lua Lua> for Vim<'lua> {
+    fn from(lua: &'lua Lua) -> Self {
+        Self::new(lua)
     }
 }

@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use mlua::prelude::*;
-use nvim_macros::fn_table;
+use nvim_macros::api;
 
 use crate::common::Buffer;
 
-fn_table! {
+api! {
     /// `vim.lsp.*`
-    Lsp(vim.lsp, "https://neovim.io/doc/user/lsp.html"#"LSP") {
+    Lsp("https://neovim.io/doc/user/lsp.html"#"LSP") {
         /// Sends an async request for all active clients attached to the buffer.
         buf_request(buffer: Buffer, method: String, params: Option<LuaTable<'lua>>, handler: Handler<'lua>) -> (Option<HashMap<String, String>>, LuaFunction<'lua>) {
 

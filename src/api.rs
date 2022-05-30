@@ -5,15 +5,15 @@ use derive_builder::Builder;
 use derive_more::From;
 use futures::FutureExt;
 use mlua::{chunk, prelude::*, ToLua};
-use nvim_macros::fn_table;
+use nvim_macros::api;
 use serde::Deserialize;
 use smart_default::SmartDefault;
 
 use crate::common::Buffer;
 
-fn_table! {
+api! {
     /// `vim.api.*`
-    Api(vim.api, "https://neovim.io/doc/user/api.html" # "api-global") {
+    Api("https://neovim.io/doc/user/api.html" # "api-global") {
 
         nvim__get_runtime(pat: &[&str], all: bool, opts: NvimGetRuntimeOpts) -> LuaValue {
             input!{
@@ -199,14 +199,14 @@ fn_table! {
             }
             input!{
                 NvimSetKeymapOpts<'lua> {
-                    nowait: bool,
-                    silent: bool,
-                    script: bool,
-                    expr: bool,
-                    unique: bool,
-                    noremap: bool,
-                    desc: Option<String>,
-                    callback: Option<LuaFunction<'lua>>
+                    pub nowait: bool,
+                    pub silent: bool,
+                    pub script: bool,
+                    pub expr: bool,
+                    pub unique: bool,
+                    pub noremap: bool,
+                    pub desc: Option<String>,
+                    pub callback: Option<LuaFunction<'lua>>
                 }
             }
         }
