@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Buffer",""]]});
+initSidebarItems({"enum":[["Index",""]]});

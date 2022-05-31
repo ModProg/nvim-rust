@@ -289,7 +289,7 @@
 <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 <span class="kw">use</span> <span class="ident">smart_default::SmartDefault</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::common::Buffer</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::common::Index</span>;
 
 <span class="macro">api!</span> {
     <span class="doccomment">/// `vim.api.*`</span>
@@ -303,7 +303,7 @@
             }
         }
 
-        <span class="ident">nvim_buf_create_user_command</span>(<span class="ident">buffer</span>: <span class="ident">Buffer</span>, <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">command</span>: <span class="ident">Command</span>, <span class="ident">opts</span>: <span class="ident">NvimCreateUserCommandOpts</span>) {
+        <span class="ident">nvim_buf_create_user_command</span>(<span class="ident">buffer</span>: <span class="ident">Index</span>, <span class="ident">name</span>: <span class="ident">String</span>, <span class="ident">command</span>: <span class="ident">Command</span>, <span class="ident">opts</span>: <span class="ident">NvimCreateUserCommandOpts</span>) {
             <span class="macro">input!</span>{
                 <span class="ident">NvimCreateUserCommandOpts</span> {
                     <span class="kw">pub</span> <span class="ident">nargs</span>: <span class="ident">Nargs</span>,

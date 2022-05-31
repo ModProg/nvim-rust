@@ -16,7 +16,7 @@
 <span class="kw">use</span> <span class="ident">mlua::ToLua</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">ToLua</span>, <span class="ident">From</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Buffer</span> {
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Index</span> {
     <span class="attribute">#[<span class="ident">mlua</span>(<span class="ident">value</span> <span class="op">=</span> <span class="number">0</span>)]</span>
     <span class="ident">Current</span>,
     <span class="ident">Index</span>(<span class="ident">i64</span>),
