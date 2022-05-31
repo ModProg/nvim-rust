@@ -9,7 +9,7 @@ use nvim_macros::api;
 use serde::Deserialize;
 use smart_default::SmartDefault;
 
-use crate::common::Buffer;
+use crate::common::Index;
 
 api! {
     /// `vim.api.*`
@@ -23,7 +23,7 @@ api! {
             }
         }
 
-        nvim_buf_create_user_command(buffer: Buffer, name: String, command: Command, opts: NvimCreateUserCommandOpts) {
+        nvim_buf_create_user_command(buffer: Index, name: String, command: Command, opts: NvimCreateUserCommandOpts) {
             input!{
                 NvimCreateUserCommandOpts {
                     pub nargs: Nargs,
