@@ -16,7 +16,7 @@ api! {
     #[prefixed]
     Vim("https://neovim.io/doc/user/lua.html" # "lua-stdlib"){
         api: Api,
-        #[link="https://neovim.io/doc/user/lsp.html#LSP"]
+        #[link = "https://neovim.io/doc/user/lsp.html#LSP"]
         lsp: Lsp,
         /// Display a notification to the user
         notify(value: &str, level: LogLevel, opts: Option<LuaTable>) {
@@ -35,6 +35,9 @@ api! {
         t: IndexedVariables,
         v: Variables,
         env: Env,
+        opt: Opt,
+        opt_local: Opt,
+        opt_global: Opt
     }
 }
 
@@ -58,6 +61,7 @@ api! {
     Variables("https://neovim.io/doc/user/lua.html"#"lua-vim-variables")
     IndexedVariables("https://neovim.io/doc/user/lua.html"#"lua-vim-variables")
     Env("https://neovim.io/doc/user/lua.html"#"vim.env")
+    Opt("https://neovim.io/doc/user/lua.html"#"vim.opt")
 }
 
 impl<'lua> Variables<'lua> {
@@ -118,5 +122,31 @@ impl Env<'_> {
     }
     pub fn unset(&self, name: impl AsRef<str>) {
         self.this.set(name.as_ref(), LuaValue::Nil).unwrap()
+    }
+}
+
+impl<'lua> Opt<'lua> {
+    pub fn get<V: FromLua<'lua>>(&self, name: impl AsRef<str>) -> LuaResult<V> {
+        self.this
+            .get::<_, LuaTable>(name.as_ref())?
+            .call_method("get", ())
+    }
+    pub fn set(&self, name: impl AsRef<str>, value: impl ToLua<'lua>) -> LuaResult<()> {
+        self.this.set(name.as_ref(), value)
+    }
+    pub fn append(&self, name: impl AsRef<str>, value: impl ToLua<'lua>) -> LuaResult<()> {
+        self.this
+            .get::<_, LuaTable>(name.as_ref())?
+            .call_method("append", value)
+    }
+    pub fn prepend(&self, name: impl AsRef<str>, value: impl ToLua<'lua>) -> LuaResult<()> {
+        self.this
+            .get::<_, LuaTable>(name.as_ref())?
+            .call_method("prepend", value)
+    }
+    pub fn remove(&self, name: impl AsRef<str>, value: impl ToLua<'lua>) -> LuaResult<()> {
+        self.this
+            .get::<_, LuaTable>(name.as_ref())?
+            .call_method("remove", value)
     }
 }
