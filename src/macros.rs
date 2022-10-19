@@ -43,7 +43,7 @@
 
 macro_rules! input {
     {$ident:ident$(<$($generics:tt),*>)? {$($body:tt)*} } => {
-        #[derive(Builder, Default, ToLua)]
+        #[derive(derive_builder::Builder, Default, mlua::ToLua)]
         #[builder(setter(strip_option))]
         #[builder(build_fn(private, name = "build_"))]
         #[builder(default)]

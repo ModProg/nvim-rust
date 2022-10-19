@@ -2,13 +2,14 @@ use std::iter;
 
 use proc_macro2::TokenStream;
 use proc_macro_error::{proc_macro_error, ResultExt};
+use quote::format_ident;
 use quote_use::quote_use as quote;
 use syn::{
     braced, parenthesized,
     parse::{Parse, ParseStream, Parser},
     punctuated::Punctuated,
     token::Brace,
-    Attribute, FnArg, Ident, LitStr, Pat, PatIdent, PatType, ReturnType, Token, Type,
+    Attribute, FnArg, Generics, Ident, LitStr, Pat, PatIdent, PatType, ReturnType, Token, Type,
 };
 
 macro_rules! sequence {
@@ -80,11 +81,17 @@ pub fn api(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     false
                 }else{true});
                 let doc_link = format!("\n\n[Neovim doc]({doc_link})");
-                let ident_s = ident.to_string();
+                let ident_s = get_attr(&mut attrs, "alias").unwrap_or_else(|| ident.to_string());
                 Ok((quote!(#ident: ::once_cell::unsync::OnceCell::new()),
                 if input.parse::<Token![:]>().is_ok() {
                     let ty: Type = input.parse()?;
                     let _  = input.parse::<Token![,]>();
+                    let fn_ = if has_attr(&mut attrs, "private") {
+                        let ident = format_ident!("{ident}_");
+                        quote!(fn #ident)
+                    } else {
+                        quote!(pub fn #ident)
+                    };
                 (
                     quote!{
                         #(#attrs)*
@@ -94,7 +101,7 @@ pub fn api(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     quote!{
                         #(#attrs)*
                         #[doc = #doc_link]
-                        pub fn #ident(&self) -> &#ty<'lua> {
+                        #fn_ (&self) -> &#ty<'lua> {
                             self.#ident.get_or_init(|| {
                                 self.this.get(#ident_s).unwrap()
                             })
@@ -103,39 +110,47 @@ pub fn api(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     quote!())
                 )
                 } else {
-                let inner;
-                let _ = parenthesized!(inner in input);
-                let fields = Punctuated::<FnArg, Token![,]>::parse_terminated(&inner)?;
-                let names = fields.iter().map(|arg|match arg {
-                    FnArg::Typed(PatType{pat,..}) => match pat.as_ref() {
-                        Pat::Ident(PatIdent{ident,..}) => ident,
-                        _ => unimplemented!()
-                    },
-                        _ => unimplemented!()
-                });
-                let ret_type:ReturnType = input.parse()?;
-                let tt = if input.peek(Brace) {
+                    let table = has_attr(&mut attrs, "table");
+
+                    let generics: Generics = input.parse()?;
                     let inner;
-                    _ = braced!(inner in input);
-                    inner.parse()?
-                } else {
-                    quote!()
-                };
-                (quote!{
-                    #(#attrs)*
-                    #[doc = #doc_link]
-                    #ident: ::once_cell::unsync::OnceCell<LuaFunction<'lua>>
-                },(quote!{
-                    #(#attrs)*
-                    #[doc = #doc_link]
-                    pub fn #ident(&self, #fields) #ret_type {
-                        mlua::FromLuaMulti::from_lua_multi(
-                            self.#ident.get_or_init(|| {
-                                self.this.get(#ident_s).unwrap()
-                            })
-                            .call((#(#names),*)).unwrap(), self.lua).unwrap()
-                    }
-                },tt))}
+                    let _ = parenthesized!(inner in input);
+                    let fields = Punctuated::<FnArg, Token![,]>::parse_terminated(&inner)?;
+                    let names = fields.iter().map(|arg|match arg {
+                        FnArg::Typed(PatType{pat,..}) => match pat.as_ref() {
+                            Pat::Ident(PatIdent{ident,..}) => ident,
+                            _ => unimplemented!()
+                        },
+                            _ => unimplemented!()
+                    });
+                    let ret_type:ReturnType = input.parse()?;
+                    let tt = if input.peek(Brace) {
+                        let inner;
+                        _ = braced!(inner in input);
+                        inner.parse()?
+                    } else {
+                        quote!()
+                    };
+                    let ty = if table {
+                        quote!(LuaTable<'lua>)
+                    } else {
+                        quote!(LuaFunction<'lua>)
+                    };
+                    (quote!{
+                        #(#attrs)*
+                        #[doc = #doc_link]
+                        #ident: ::once_cell::unsync::OnceCell<#ty>
+                    },(quote!{
+                        #(#attrs)*
+                        #[doc = #doc_link]
+                        pub fn #ident #generics(&self, #fields) #ret_type {
+                            mlua::FromLuaMulti::from_lua_multi(
+                                self.#ident.get_or_init(|| {
+                                    self.this.get(#ident_s).unwrap()
+                                })
+                                .call((#(#names),*)).unwrap(), self.lua).unwrap()
+                        }
+                    },tt))}
                 ))})().unwrap_or_abort())}
             }).unzip()
         } else {
@@ -180,4 +195,36 @@ pub fn api(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     .parse(input)
     .unwrap_or_abort()
     .into()
+}
+
+fn has_attr(attrs: &mut Vec<Attribute>, name: &str) -> bool {
+    let mut found = false;
+    attrs.retain(|attr| {
+        if attr.path.is_ident(name) {
+            found = true;
+            false
+        } else {
+            true
+        }
+    });
+    found
+}
+
+fn get_attr(attrs: &mut Vec<Attribute>, name: &str) -> Option<String> {
+    let mut value = None;
+    attrs.retain(|attr| {
+        if attr.path.is_ident(name) {
+            value = Some(
+                sequence!(Token![=], LitStr)
+                    .parse2(attr.tokens.clone())
+                    .unwrap_or_abort()
+                    .1
+                    .value(),
+            );
+            false
+        } else {
+            true
+        }
+    });
+    value
 }

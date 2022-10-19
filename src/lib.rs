@@ -7,9 +7,11 @@ use nvim_macros::api;
 mod macros;
 
 pub mod api;
-use api::Api;
+pub use api::Api;
 pub mod common;
+pub mod fns;
 pub mod lsp;
+pub use fns::Fns;
 
 api! {
     /// `vim.*`
@@ -18,6 +20,13 @@ api! {
         api: Api,
         #[link = "https://neovim.io/doc/user/lsp.html#LSP"]
         lsp: Lsp,
+        /// Return a human-readable representation of the given object
+        #[private]
+        inspect: LuaTable,
+        #[sec = "vim.fn"]
+        #[alias = "fn"]
+        fns: Fns,
+        // inspect(value: LuaValue) -> String
         /// Display a notification to the user
         notify(value: &str, level: LogLevel, opts: Option<LuaTable>) {
             #[derive(Debug, Clone, Copy, ToLua)]
@@ -35,9 +44,13 @@ api! {
         t: IndexedVariables,
         v: Variables,
         env: Env,
+        #[s="lua-vim-opt"]
         opt: Opt,
+        #[s="lua-vim-opt"]
         opt_local: Opt,
-        opt_global: Opt
+        #[s="lua-vim-opt"]
+        opt_global: Opt,
+        ui: Ui
     }
 }
 
@@ -48,6 +61,11 @@ impl<'lua> Vim<'lua> {
 
     pub fn lua(&self) -> &'lua Lua {
         self.lua
+    }
+
+    pub fn inspect(&self, value: LuaValue) -> String {
+        let value: LuaString = self.inspect_().call(value).unwrap();
+        value.to_string_lossy().to_string()
     }
 }
 
@@ -148,5 +166,19 @@ impl<'lua> Opt<'lua> {
         self.this
             .get::<_, LuaTable>(name.as_ref())?
             .call_method("remove", value)
+    }
+}
+
+api! {
+    Ui("https://neovim.io/doc/user/lua.html" # "lua-ui"){
+        #[prefix = "vim.ui."]
+        input(opts: InputOpts, callback: LuaFunction) {
+            input!{
+                InputOpts {
+                    prompt: Option<String>,
+
+                }
+            }
+        }
     }
 }

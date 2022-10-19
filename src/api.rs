@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use std::future::Future;
+use std::{collections::HashMap, future::Future};
 
 use derive_builder::Builder;
 use derive_more::From;
@@ -79,6 +79,8 @@ api! {
             }
         }
 
+        nvim_buf_set_keymap(buffer: Index, mode: Mode, lhs: &str, rhs: &str, opts: NvimSetKeymapOpts)
+
         /// Create an autocommand
         ///
         /// The API allows for two (mutually exclusive) types of actions
@@ -157,8 +159,18 @@ api! {
             }
         }
 
+        nvim_get_context(opts: NvimGetContextOps) -> HashMap<String, Vec<LuaString>> {
+            input! {
+                NvimGetContextOps {
+                    types: Vec<String>
+                }
+            }
+        }
+
         /// Find files in runtime direcories
         nvim_get_runtime_file(glob: &str, all: bool) -> Vec<String>
+
+        nvim_load_context(context: HashMap<String, LuaString>)
 
         nvim_set_keymap(mode: Mode, lhs: &str, rhs: &str, opts: NvimSetKeymapOpts) {
             #[derive(Clone, Copy, Debug, ToLua, Deserialize)]
